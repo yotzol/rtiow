@@ -1,9 +1,5 @@
 package main
 
-import "core:math"
-
-
-sqrt   :: math.sqrt_f64
 
 Vec3   :: [3]f64
 Point3 :: Vec3
