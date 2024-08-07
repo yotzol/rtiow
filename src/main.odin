@@ -46,7 +46,7 @@ main :: proc()
                         p_center := p00_loc + f64(i)*p_du + f64(j)*p_dv
                         ray_dir  := p_center - cam_center
                         r        := Ray{cam_center, ray_dir}
-                        color    := ray_color(&r, &world) 
+                        color    := ray_color(r, &world) 
                         write_color(os.stdout, &color)
                 }
         }
@@ -55,13 +55,13 @@ main :: proc()
         fmt.eprintln("Done.")
 }
 
-ray_color :: proc(r: ^Ray, world: ^HittableList) -> Color {
+ray_color :: proc(r: Ray, world: ^HittableList) -> Color {
         rec: HitRecord
         if hit_list(world, r, 0, INFINITY, &rec) {
                 return (rec.normal + Color{1,1,1}) / 2
         }
 
-        unit_dir := unit_vector(&r.dir)
+        unit_dir := unit_vector(r.dir)
         a        := (unit_dir.y + 1) / 2
         return (1-a)*Color{1,1,1} + a*Color{0.5,0.7,1.0}
 }
