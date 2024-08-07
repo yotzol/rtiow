@@ -18,13 +18,13 @@ Hittable :: Sphere
 HittableList :: #soa[dynamic]Hittable
 
 
-hit_list :: proc(list: ^HittableList, r: Ray, tmin, tmax: f64, rec: ^HitRecord) -> bool {
+hit_list :: proc(list: ^HittableList, r: Ray, ray_t: Interval, rec: ^HitRecord) -> bool {
         temp_rec       : HitRecord
         hit_anything   := false
-        closest_so_far := tmax
+        closest_so_far := ray_t.max
 
         for &obj in list {
-                if hit_obj(&obj, r, tmin, closest_so_far, &temp_rec) {
+                if hit_obj(&obj, r, {ray_t.min, closest_so_far}, &temp_rec) {
                         hit_anything   = true
                         closest_so_far = temp_rec.t
                         rec^ = temp_rec
@@ -34,7 +34,7 @@ hit_list :: proc(list: ^HittableList, r: Ray, tmin, tmax: f64, rec: ^HitRecord) 
         return hit_anything
 }
 
-hit_obj :: proc(h: ^Hittable, r: Ray, tmin, tmax: f64, rec: ^HitRecord) -> bool {
+hit_obj :: proc(h: ^Hittable, r: Ray, ray_t: Interval, rec: ^HitRecord) -> bool {
         obj := h
         oc  := obj.center - r.orig
         a   := length_squared(r.dir)
@@ -47,9 +47,9 @@ hit_obj :: proc(h: ^Hittable, r: Ray, tmin, tmax: f64, rec: ^HitRecord) -> bool 
         sqrtd := sqrt(d)
 
         root := (h - sqrtd) / a
-        if root <= tmin || tmax <= root {
+        if !interval_surrounds(ray_t, root) {
                 root = (h + sqrtd) / a
-                if root <= tmin || tmax <= root {
+                if !interval_surrounds(ray_t, root) {
                         return false
                 }
         }

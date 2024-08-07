@@ -57,7 +57,7 @@ main :: proc()
 
 ray_color :: proc(r: Ray, world: ^HittableList) -> Color {
         rec: HitRecord
-        if hit_list(world, r, 0, INFINITY, &rec) {
+        if hit_list(world, r, {0, INFINITY}, &rec) {
                 return (rec.normal + Color{1,1,1}) / 2
         }
 
