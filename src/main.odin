@@ -1,6 +1,8 @@
 package main
 
 import "core:fmt"
+import "core:os"
+
 
 main :: proc()
 {
@@ -14,15 +16,13 @@ main :: proc()
         for j in 0..<img_h {
                 fmt.eprintf("\rScanlines remaining: %d ", img_h-j)
                 for i in 0..<img_w {
-                        r := f64(i) / (img_w-1)
-                        g := f64(j) / (img_h-1)
-                        b := 0.0
+                        pixel_color := Color {
+                                f64(i) / (img_w-1),
+                                f64(j) / (img_h-1),
+                                0,
+                        }
 
-                        ir := u8(255.999 * r)
-                        ig := u8(255.999 * g)
-                        ib := u8(255.999 * b)
-
-                        fmt.println(ir, ig, ib)
+                        write_color(os.stdout, &pixel_color)
                 }
         }
 
