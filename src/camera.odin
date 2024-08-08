@@ -8,39 +8,46 @@ import "core:os"
 init_camera :: proc() { }
 
 // defaults
-aspect_ratio: f64 = 1
-img_w       : int = 100
+aspect_ratio        : f64 = 1.0
+img_w               : int = 100
+samples_per_pixel   : int = 10
 
 // auto
-img_h       : int
-center      : Point3
-p00_loc     : Point3
-p_du, p_dv  : Vec3
+img_h               : int
+center              : Point3
+p00_loc             : Point3
+p_du, p_dv          : Vec3
+pixel_samples_scale : f64
 
 
 @(private)
-init_camera :: proc(ar: f64, w: int) {
-        aspect_ratio = ar
-        img_w        = w
+init_camera :: proc(ar: f64, w, spp: int) {
+        // globals
+        aspect_ratio        = ar
+        img_w               = w
+        samples_per_pixel   = spp
 
+        // consts
+        focal_length       :: 1.0
+        vp_h               :: 2.0
+
+        center              = Point3{0,0,0}
+
+        // auto
         img_h  = int(f64(img_w) / aspect_ratio)
         img_h  = img_h if img_h > 1 else 1
 
-        vp_h  :: 2.0
         vp_w  := vp_h * f64(img_w)/f64(img_h)
 
-        focal_length :: 1.0
-        center = Point3{0,0,0}
-
-        vp_u  := Vec3{vp_w, 0, 0}
+        vp_u  := Vec3{vp_w,  0, 0}
         vp_v  := Vec3{0, -vp_h, 0}
 
         p_du   = vp_u / f64(img_w)
         p_dv   = vp_v / f64(img_h)
 
-        vp_upper_left := center - {0, 0, focal_length} - vp_u/2 - vp_v/2
-        p00_loc        = vp_upper_left + (p_du + p_dv)/2
-
+        vp_upper_left      := center - {0, 0, focal_length} - vp_u/2 - vp_v/2
+        p00_loc             = vp_upper_left + (p_du + p_dv)/2
+        pixel_samples_scale = 1.0 / f64(samples_per_pixel)
 }
 
 @(private)
@@ -51,15 +58,28 @@ render :: proc(world: ^HittableList) {
         for j in 0..<img_h {
                 fmt.eprintf("\rScanlines remaining: %d ", img_h-j)
                 for i in 0..<img_w {
-                        p_center := p00_loc + f64(i)*p_du + f64(j)*p_dv
-                        ray_dir  := p_center - center
-                        r        := Ray{center, ray_dir}
-                        color    := ray_color(r, world) 
+                        color := Color{0,0,0}
+                        for _ in 0..<samples_per_pixel {
+                                ray   := get_ray(i, j)
+                                color += ray_color(ray, world)
+                        }
+                        color *= pixel_samples_scale
                         write_color(os.stdout, &color)
                 }
         }
 }
 
+get_ray :: proc(i, j: int) -> Ray {
+        offset       := sample_square()
+        pixel_sample := p00_loc + (f64(i)+offset.x)*p_du + (f64(j)+offset.y)*p_dv
+        ray_orig     := center
+        ray_dir      := pixel_sample - ray_orig
+        return {ray_orig, ray_dir}
+}
+
+sample_square :: proc() -> Vec3 {
+        return {random() - 0.5, random() - 0.5, 0}
+}
 
 ray_color :: proc(r: Ray, world: ^HittableList) -> Color {
         rec: HitRecord

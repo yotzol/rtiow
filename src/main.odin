@@ -8,13 +8,13 @@ main :: proc()
 {
         aspect_ratio : f64 = 16.0 / 9.0
         image_width  : int = 400
+        samples_pp   : int = 100
 
-        init_camera(aspect_ratio, image_width)
+        init_camera(aspect_ratio, image_width, samples_pp)
 
         world: HittableList
         append(&world, Sphere{{0,     0,-1}, 0.5})
         append(&world, Sphere{{0,-100.5,-1}, 100})
-
         render(&world)
 
         fmt.eprintln("\rScanlines remaining: 0")

@@ -17,3 +17,11 @@ interval_surrounds :: proc(i: Interval, n: f64) -> bool {
         return i.min < n && n < i.max
 }
 
+clamp :: proc(i: Interval, n: f64) -> f64 {
+        switch {
+        case n < i.min: return i.min
+        case n > i.max: return i.max
+        case:           return n
+        }
+}
+
