@@ -7,10 +7,19 @@ import "core:os"
 
 init_camera :: proc() { }
 
+@(private)
+CameraSettings :: struct {
+        aspect_ratio      : f64,
+        image_width       : int,
+        samples_per_pixel : int,
+        max_depth         : int,
+}
+
 // defaults
 aspect_ratio        : f64 = 1.0
 img_w               : int = 100
 samples_per_pixel   : int = 10
+max_depth           : int = 10
 
 // auto
 img_h               : int
@@ -21,17 +30,18 @@ pixel_samples_scale : f64
 
 
 @(private)
-init_camera :: proc(ar: f64, w, spp: int) {
+init_camera :: proc(config: CameraSettings) {
         // globals
-        aspect_ratio        = ar
-        img_w               = w
-        samples_per_pixel   = spp
+        if config.aspect_ratio      != 0 do aspect_ratio      = config.aspect_ratio
+        if config.image_width       != 0 do img_w             = config.image_width
+        if config.samples_per_pixel != 0 do samples_per_pixel = config.samples_per_pixel
+        if config.max_depth         != 0 do max_depth         = config.max_depth
 
         // consts
-        focal_length       :: 1.0
-        vp_h               :: 2.0
+        focal_length :: 1.0
+        vp_h         :: 2.0
 
-        center              = Point3{0,0,0}
+        center = Point3{0,0,0}
 
         // auto
         img_h  = int(f64(img_w) / aspect_ratio)
@@ -61,7 +71,7 @@ render :: proc(world: ^HittableList) {
                         color := Color{0,0,0}
                         for _ in 0..<samples_per_pixel {
                                 ray   := get_ray(i, j)
-                                color += ray_color(ray, world)
+                                color += ray_color(ray, max_depth, world)
                         }
                         color *= pixel_samples_scale
                         write_color(os.stdout, &color)
@@ -81,13 +91,23 @@ sample_square :: proc() -> Vec3 {
         return {random() - 0.5, random() - 0.5, 0}
 }
 
-ray_color :: proc(r: Ray, world: ^HittableList) -> Color {
+ray_color :: proc(r: Ray, depth: int, world: ^HittableList) -> Color {
+        if depth <= 0 do return {0,0,0}
+
+        r := r
         rec: HitRecord
-        if hit_list(world, r, {0, INFINITY}, &rec) {
-                return (rec.normal + Color{1,1,1}) / 2
+
+        if hit_list(world, r, {0.001, INFINITY}, &rec) {
+                scattered: Ray
+                attenuation: Color
+
+                if scatter(rec.mat, &r, &scattered, &rec, &attenuation) {
+                        return attenuation * ray_color(scattered, depth-1, world)
+                }
+                return {0,0,0}
         }
 
-        unit_dir := unit_vector(r.dir)
+        unit_dir := unit_vec(r.dir)
         a        := (unit_dir.y + 1) / 2
         return (1-a)*Color{1,1,1} + a*Color{0.5,0.7,1.0}
 }

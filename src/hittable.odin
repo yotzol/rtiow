@@ -3,6 +3,7 @@ package main
 
 HitRecord :: struct {
         normal: Vec3,
+        mat   : ^Material,
         p     : Point3,
         t     : f64,
         front : bool,
@@ -11,6 +12,7 @@ HitRecord :: struct {
 Sphere :: struct {
         center    : Point3,
         radius    : f64,
+        mat       : ^Material,
 }
 
 Hittable :: Sphere
@@ -57,6 +59,7 @@ hit_obj :: proc(h: ^Hittable, r: Ray, ray_t: Interval, rec: ^HitRecord) -> bool 
         rec.t           = root
         rec.p           = ray_at(r, rec.t)
         outward_normal := (rec.p - obj.center) / obj.radius
+        rec.mat         = obj.mat
 
         set_face_normal(rec, r, outward_normal)
         return true

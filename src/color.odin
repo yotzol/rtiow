@@ -10,9 +10,17 @@ Color :: Vec3
 INTENSITY :: Interval{0.000, 0.999}
 
 write_color :: proc(out: os.Handle, color: ^Color) {
-        r_byte := u8(256 * clamp(INTENSITY, color.r))
-        g_byte := u8(256 * clamp(INTENSITY, color.g))
-        b_byte := u8(256 * clamp(INTENSITY, color.b))
+        r := linear_to_gamma(color.r)
+        g := linear_to_gamma(color.g)
+        b := linear_to_gamma(color.b)
+        
+        r_byte := u8(256 * clamp(INTENSITY, r))
+        g_byte := u8(256 * clamp(INTENSITY, g))
+        b_byte := u8(256 * clamp(INTENSITY, b))
 
         fmt.fprintln(out, r_byte, g_byte, b_byte)
+}
+
+linear_to_gamma :: proc(linear_component: f64) -> f64 {
+        return sqrt(linear_component) if linear_component > 0 else 0
 }

@@ -15,6 +15,10 @@ run: build
 	@mkdir -p $(OUTPUT_DIR)
 	@./$(EXECUTABLE) > $(IMAGE_FILE)
 
+time: build
+	@mkdir -p $(OUTPUT_DIR)
+	@time ./$(EXECUTABLE) > $(IMAGE_FILE)
+
 clean:
 	@rm -f ./$(EXECUTABLE)
 	@rm -rf $(OUTPUT_DIR)
