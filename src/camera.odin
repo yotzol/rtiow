@@ -28,6 +28,7 @@ p00_loc             : Point3
 p_du, p_dv          : Vec3
 pixel_samples_scale : f64
 
+canvas : [dynamic]Color
 
 @(private)
 init_camera :: proc(config: CameraSettings) {

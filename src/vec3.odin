@@ -64,3 +64,10 @@ near_zero :: proc(v: Vec3) -> bool {
 reflect :: proc(v, n: Vec3) -> Vec3 {
         return v - 2*dot(v,n)*n
 }
+
+refract :: proc(uv, n: Vec3, etai_over_etat: f64) -> Vec3 {
+        cos_theta      := min(dot(-uv,n), 1)
+        r_out_perp     := etai_over_etat * (uv + cos_theta*n)
+        r_out_parallel := -sqrt(abs(1-length_squared(r_out_perp))) * n
+        return r_out_perp + r_out_parallel
+}
