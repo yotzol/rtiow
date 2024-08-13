@@ -14,9 +14,11 @@ main :: proc()
                 samples_per_pixel    = 100,
                 max_depth            = 50,
                 field_of_view        = 20,
-                look_from            = {-2,2,1},
-                look_at              = {0,0,-1},
-                vector_up            = {0,1, 0},
+                look_from            = {-2,2, 1},
+                look_at              = { 0,0,-1},
+                vector_up            = { 0,1, 0},
+                defocus_angle        = 10,
+                focus_dist           = 3.4,
         }
 
         init_camera(camera_config)

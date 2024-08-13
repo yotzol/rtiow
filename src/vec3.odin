@@ -71,3 +71,10 @@ refract :: proc(uv, n: Vec3, etai_over_etat: f64) -> Vec3 {
         r_out_parallel := -sqrt(abs(1-length_squared(r_out_perp))) * n
         return r_out_perp + r_out_parallel
 }
+
+rand_in_unit_disk :: proc() -> Vec3 {
+        for {
+                p := Vec3{random(-1,1), random(-1,1), 0}
+                if length_squared(p) < 1 do return p
+        }
+}
