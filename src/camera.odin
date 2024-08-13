@@ -43,7 +43,6 @@ u, v, w             : Vec3
 defocus_disk_u      : Vec3
 defocus_disk_v      : Vec3
 
-canvas : [dynamic]Color
 
 @(private)
 init_camera :: proc(config: CameraSettings) {

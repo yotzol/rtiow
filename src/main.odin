@@ -66,8 +66,5 @@ main :: proc()
         append(&world, Sphere{{ 4,1,0}, 1, &material_3})
 
         render(&world)
-
-        fmt.eprintln("\rScanlines remaining: 0")
-        fmt.eprintln("Done.")
 }
 

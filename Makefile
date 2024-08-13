@@ -2,9 +2,9 @@ SRC_DIR    = src
 EXECUTABLE = rtiow
 OUTPUT_DIR = output
 IMAGE_FILE = $(OUTPUT_DIR)/image.ppm
-FLAGS      = -o:aggressive
+FLAGS      = -o:aggressive -microarch:native -disable-assert -no-bounds-check
 
-.PHONY: all build run clean
+.PHONY: all build run time clean
 
 all: build
 
