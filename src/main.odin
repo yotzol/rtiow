@@ -6,11 +6,17 @@ import "core:os"
 
 main :: proc()
 {
+        R := cos(PI/4)
+
         camera_config := CameraSettings {
                 aspect_ratio         = 16.0 / 9.0,
-                image_width          = 500,
-                samples_per_pixel    = 500,
+                image_width          = 400,
+                samples_per_pixel    = 100,
                 max_depth            = 50,
+                field_of_view        = 20,
+                look_from            = {-2,2,1},
+                look_at              = {0,0,-1},
+                vector_up            = {0,1, 0},
         }
 
         init_camera(camera_config)
