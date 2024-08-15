@@ -3,6 +3,9 @@ package main
 
 import "core:fmt"
 import "core:os"
+import "core:image"
+import "core:image/bmp"
+import "core:bytes"
 
 
 init_camera :: proc() { }
@@ -92,9 +95,8 @@ init_camera :: proc(config: CameraSettings) {
 
 @(private)
 render :: proc(world: ^HittableList) {
-        fmt.println("P3")
-        fmt.println(img_w, img_h)
-        fmt.println("255")
+        canvas : bytes.Buffer
+
         for j in 0..<img_h {
                 fmt.eprintf("\rScanlines remaining: %d ", img_h-j)
                 for i in 0..<img_w {
@@ -104,9 +106,27 @@ render :: proc(world: ^HittableList) {
                                 color += ray_color(ray, max_depth, world)
                         }
                         color *= pixel_samples_scale
-                        write_color(os.stdout, &color)
+                        write_color(&canvas, &color)
                 }
         }
+
+        img := image.Image{
+                width    = img_w,
+                height   = img_h,
+                channels = 3,
+                depth    = 8,
+                pixels   = canvas,
+        }
+
+        img_buf : bytes.Buffer
+        
+        err := bmp.save_to_buffer(&img_buf, &img)
+        if err != nil {
+                fmt.eprintln("Error saving image:", err)
+                return
+        }
+
+        os.write_entire_file("output/image.bmp", img_buf.buf[:])
 }
 
 get_ray :: proc(i, j: int) -> Ray {

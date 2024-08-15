@@ -13,11 +13,7 @@ build:
 
 run: build
 	@mkdir -p $(OUTPUT_DIR)
-	@./$(EXECUTABLE) > $(IMAGE_FILE)
-
-time: build
-	@mkdir -p $(OUTPUT_DIR)
-	@time ./$(EXECUTABLE) > $(IMAGE_FILE)
+	@./$(EXECUTABLE)
 
 clean:
 	@rm -f ./$(EXECUTABLE)
