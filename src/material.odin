@@ -19,7 +19,7 @@ scatter :: proc(m: ^Material, r_in, scattered: ^Ray, rec: ^HitRecord, attenuatio
                 scatter_dir := rec.normal + rand_unit_vec()
                 if near_zero(scatter_dir) do scatter_dir = rec.normal
 
-                scattered^   = {rec.p, scatter_dir}
+                scattered^   = {rec.p, scatter_dir, r_in.tm}
                 attenuation^ = m.albedo
                 return true
         case Metal:
@@ -27,7 +27,7 @@ scatter :: proc(m: ^Material, r_in, scattered: ^Ray, rec: ^HitRecord, attenuatio
 
                 reflected   := reflect(r_in.dir, rec.normal)
                 reflected    = unit_vec(reflected + (m.fuzz*rand_unit_vec()))
-                scattered^   = {rec.p, reflected}
+                scattered^   = {rec.p, reflected, r_in.tm}
                 attenuation^ = m.albedo
                 return true
         case Dielectric:
@@ -48,7 +48,7 @@ scatter :: proc(m: ^Material, r_in, scattered: ^Ray, rec: ^HitRecord, attenuatio
                 } else {
                         dir = refract(unit_dir, rec.normal, ri)
                 }
-                scattered^ = {rec.p, dir}
+                scattered^ = {rec.p, dir, r_in.tm}
                 return true
         }
         return false

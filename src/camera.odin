@@ -134,7 +134,8 @@ get_ray :: proc(i, j: int) -> Ray {
         pixel_sample := p00_loc + (f64(i)+offset.x)*p_du + (f64(j)+offset.y)*p_dv
         ray_orig     := defocus_disk_sample() if defocus_angle > 0 else center
         ray_dir      := pixel_sample - ray_orig
-        return {ray_orig, ray_dir}
+        ray_time     := random()
+        return {ray_orig, ray_dir, ray_time}
 }
 
 sample_square :: proc() -> Vec3 {

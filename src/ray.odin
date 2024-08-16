@@ -4,6 +4,7 @@ package main
 Ray :: struct {
         orig: Point3,
         dir : Vec3,
+        tm: f64,
 }
 
 ray_at :: proc(r: Ray, t: f64) -> Point3 {

@@ -10,9 +10,34 @@ HitRecord :: struct {
 }
 
 Sphere :: struct {
-        center    : Point3,
+        center1   : Point3,
+        center_vec: Vec3,
         radius    : f64,
         mat       : ^Material,
+        is_moving : bool,
+}
+
+sphere_new_stationary :: proc(center: Point3, radius: f64, mat: ^Material) -> Sphere {
+        return Sphere{
+                center1   = center,
+                radius    = radius,
+                mat       = mat,
+                is_moving = false,
+        }
+}
+
+sphere_new_moving :: proc(center1, center2: Point3, radius: f64, mat: ^Material) -> Sphere {
+        return Sphere{
+                center1    = center1,
+                center_vec = center2-center1,
+                radius     = radius,
+                mat        = mat,
+                is_moving  = true,
+        }
+}
+
+sphere_get_center :: proc(sphere: ^Sphere, time:f64) -> Point3 {
+        return sphere.center1 + time*sphere.center_vec
 }
 
 Hittable :: Sphere
@@ -38,7 +63,8 @@ hit_list :: proc(list: ^HittableList, r: Ray, ray_t: Interval, rec: ^HitRecord) 
 
 hit_obj :: proc(h: ^Hittable, r: Ray, ray_t: Interval, rec: ^HitRecord) -> bool {
         obj := h
-        oc  := obj.center - r.orig
+        center : Point3 = sphere_get_center(obj, r.tm) if obj.is_moving else obj.center1
+        oc  := center - r.orig
         a   := length_squared(r.dir)
         h   := dot(r.dir, oc)
         c   := length_squared(oc) - obj.radius*obj.radius
@@ -58,7 +84,7 @@ hit_obj :: proc(h: ^Hittable, r: Ray, ray_t: Interval, rec: ^HitRecord) -> bool 
 
         rec.t           = root
         rec.p           = ray_at(r, rec.t)
-        outward_normal := (rec.p - obj.center) / obj.radius
+        outward_normal := (rec.p - center) / obj.radius
         rec.mat         = obj.mat
 
         set_face_normal(rec, r, outward_normal)
