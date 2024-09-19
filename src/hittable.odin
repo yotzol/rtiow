@@ -13,7 +13,7 @@ HitRecord :: struct {
 Hittable :: struct {
         bbox: Aabb,
         data: union {
-                Sphere, BvhNode, List,
+                Sphere, BvhNode, List, Quad,
         }
 }
 
@@ -21,7 +21,7 @@ List :: struct {
         objects: [dynamic]^Hittable,
 }
 
-hittable_list_add :: proc(list: ^Hittable, object: ^Hittable) {
+list_add :: proc(list: ^Hittable, object: ^Hittable) {
         if list_data, ok := &list.data.(List); ok != false {
                 append(&list_data.objects, object)
                 list.bbox = aabb_new(list.bbox, object.bbox)
@@ -34,6 +34,7 @@ hit :: proc(h: ^Hittable, r: Ray, ray_t: Interval, rec: ^HitRecord) -> bool {
         case List:    return list_hit    (&h.data.(List), r, ray_t, rec)
         case Sphere:  return sphere_hit  ( h            , r, ray_t, rec)
         case BvhNode: return bvh_node_hit( h            , r, ray_t, rec)
+        case Quad   : return quad_hit    ( h            , r, ray_t, rec)
         case: panic("Unknown hittable type")
         }
 }

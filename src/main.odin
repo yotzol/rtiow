@@ -1,11 +1,12 @@
 package main
 
 main :: proc() {
-        switch 4 {
+        switch 5 {
         case 1: bouncing_spheres()
         case 2: checkered_spheres()
         case 3: earth()
         case 4: perlin_spheres()
+        case 5: quads()
         }
 }
 
@@ -37,7 +38,7 @@ bouncing_spheres :: proc()
                 ),
         }
 
-        hittable_list_add(&world, sphere_new({0,-1000,0}, 1000, &ground_material))
+        list_add(&world, sphere_new({0,-1000,0}, 1000, &ground_material))
 
         materials : [dynamic]^Material
         defer for mat in materials do free(mat)
@@ -54,15 +55,15 @@ bouncing_spheres :: proc()
                                         albedo      : Color    = rand_vec() * rand_vec()
                                         sphere_mat^ = Lambertian{solid_color(albedo.x, albedo.y, albedo.z)}
                                         center2 : Point3 = center + {0,random(0, 0.5),0}
-                                        hittable_list_add(&world, sphere_new(center, center2, 0.2, sphere_mat))
+                                        list_add(&world, sphere_new(center, center2, 0.2, sphere_mat))
                                 case choose_mat < 0.95:
                                         albedo      : Color    = rand_vec(0.5,1)
                                         fuzz        : f64      = random()
                                         sphere_mat^ = Metal{albedo, fuzz}
-                                        hittable_list_add(&world, sphere_new(center, 0.2, sphere_mat))
+                                        list_add(&world, sphere_new(center, 0.2, sphere_mat))
                                 case:
                                         sphere_mat^ = Dielectric{1.5}
-                                        hittable_list_add(&world, sphere_new(center, 0.2, sphere_mat))
+                                        list_add(&world, sphere_new(center, 0.2, sphere_mat))
                                 }
                                 append(&materials, sphere_mat)
                         }
@@ -73,15 +74,15 @@ bouncing_spheres :: proc()
         material_2 : Material = Lambertian{solid_color(0.4,0.2,0.1)}
         material_3 : Material = Metal{{0.7,0.6,0.7}, 0}
 
-        hittable_list_add(&world, sphere_new({ 0,1,0}, 1, &material_1))
-        hittable_list_add(&world, sphere_new({-4,1,0}, 1, &material_2))
-        hittable_list_add(&world, sphere_new({ 4,1,0}, 1, &material_3))
+        list_add(&world, sphere_new({ 0,1,0}, 1, &material_1))
+        list_add(&world, sphere_new({-4,1,0}, 1, &material_2))
+        list_add(&world, sphere_new({ 4,1,0}, 1, &material_3))
         
         node_list : Hittable = {
                 data = List{},
         }
 
-        hittable_list_add(&node_list, bvh_node_new(&world.data.(List), 0, len(world.data.(List).objects))) 
+        list_add(&node_list, bvh_node_new(&world.data.(List), 0, len(world.data.(List).objects))) 
         render(&node_list.data.(List))
 }
 
@@ -91,8 +92,8 @@ checkered_spheres :: proc() {
         mat := new(Material)
         defer free(mat)
         mat^ = Lambertian{checker}
-        hittable_list_add(&world, sphere_new({0,-10,0}, 10, mat))
-        hittable_list_add(&world, sphere_new({0, 10,0}, 10, mat))
+        list_add(&world, sphere_new({0,-10,0}, 10, mat))
+        list_add(&world, sphere_new({0, 10,0}, 10, mat))
 
         camera_config := CameraSettings {
                 aspect_ratio         = 16.0 / 9.0,
@@ -117,7 +118,7 @@ earth :: proc() {
         earth_surface : Material = Lambertian{earth_texture}
         globe         := sphere_new({0,0,0}, 2, &earth_surface)
         defer free(earth_texture)
-        hittable_list_add(&world, globe)
+        list_add(&world, globe)
 
         camera_config := CameraSettings {
                 aspect_ratio         = 16.0 / 9.0,
@@ -140,8 +141,8 @@ perlin_spheres :: proc() {
 
         pertext : Texture = Noise{perlin_new(), 4}
         mat : Material = Lambertian{&pertext}
-        hittable_list_add(&world, sphere_new({0,-1000,0}, 1000, &mat))
-        hittable_list_add(&world, sphere_new({0,    2,0},    2, &mat))
+        list_add(&world, sphere_new({0,-1000,0}, 1000, &mat))
+        list_add(&world, sphere_new({0,    2,0},    2, &mat))
 
         camera_config := CameraSettings {
                 aspect_ratio         = 16.0 / 9.0,
@@ -150,6 +151,37 @@ perlin_spheres :: proc() {
                 max_depth            = 50,
                 field_of_view        = 20,
                 look_from            = {13, 2, 3},
+                look_at              = { 0, 0, 0},
+                vector_up            = { 0, 1, 0},
+                defocus_angle        = 0,
+        }
+
+        init_camera(camera_config)
+        render(&world.data.(List))
+}
+
+quads :: proc() {
+        world: Hittable = { data = List{} }
+
+        left_red     : Material = Lambertian{solid_color(1.0,0.2,0.2)}
+        back_green   : Material = Lambertian{solid_color(0.2,1.0,0.2)}
+        right_blue   : Material = Lambertian{solid_color(0.2,0.2,1.0)}
+        upper_orange : Material = Lambertian{solid_color(1.0,0.5,0.0)}
+        lower_teal   : Material = Lambertian{solid_color(0.2,0.8,0.8)}
+
+        list_add(&world, quad_new({-3,-2, 5}, {0, 0,-4}, {0, 4, 0}, &left_red))
+        list_add(&world, quad_new({-2,-2, 0}, {4, 0, 0}, {0, 4, 0}, &back_green))
+        list_add(&world, quad_new({ 3,-2, 1}, {0, 0, 4}, {0, 4, 0}, &right_blue))
+        list_add(&world, quad_new({-2, 3, 1}, {4, 0, 0}, {0, 0, 4}, &upper_orange))
+        list_add(&world, quad_new({-2,-3, 5}, {4, 0, 0}, {0, 0,-4}, &lower_teal))
+
+        camera_config := CameraSettings {
+                aspect_ratio         = 1,
+                image_width          = 400,
+                samples_per_pixel    = 100,
+                max_depth            = 50,
+                field_of_view        = 80,
+                look_from            = { 0, 0, 9},
                 look_at              = { 0, 0, 0},
                 vector_up            = { 0, 1, 0},
                 defocus_angle        = 0,

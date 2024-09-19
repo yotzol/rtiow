@@ -18,15 +18,15 @@ aabb_new_from_points :: proc(a,b: Point3) -> Aabb {
         x : Interval = {a.x,b.x} if a.x <= b.x else {b.x,a.x}
         y : Interval = {a.y,b.y} if a.y <= b.y else {b.y,a.y}
         z : Interval = {a.z,b.z} if a.z <= b.z else {b.z,a.z}
-        return {x,y,z}
+        return pad_to_minimums({x,y,z})
 }
 
 aabb_new_from_boxes :: proc(box0, box1: Aabb) -> Aabb {
-        return {
+        return pad_to_minimums({
                 interval_new(box0.x, box1.x),
                 interval_new(box0.y, box1.y),
                 interval_new(box0.z, box1.z),
-        }
+        })
 }
 
 axis_interval :: proc(aabb: Aabb, n: int) -> Interval {
@@ -62,3 +62,14 @@ aabb_hit :: proc(aabb: Aabb, r: Ray, ray_t: Interval) -> bool {
 
         return true
 }
+
+pad_to_minimums :: proc(aabb: Aabb) -> Aabb {
+        delta :: 0.0001
+
+        x := expand(aabb.x, delta) if interval_size(aabb.x) < delta else aabb.x
+        y := expand(aabb.y, delta) if interval_size(aabb.y) < delta else aabb.y
+        z := expand(aabb.z, delta) if interval_size(aabb.z) < delta else aabb.z
+
+        return {x,y,z}
+}
+
