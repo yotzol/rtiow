@@ -94,7 +94,7 @@ init_camera :: proc(config: CameraSettings) {
 }
 
 @(private)
-render :: proc(world: ^HittableList) {
+render :: proc(world: ^List) {
         canvas : bytes.Buffer
 
         for j in 0..<img_h {
@@ -109,6 +109,8 @@ render :: proc(world: ^HittableList) {
                         write_color(&canvas, &color)
                 }
         }
+
+        fmt.eprintf("\rScanlines remaining: 0\n")
 
         img := image.Image{
                 width    = img_w,
@@ -127,6 +129,8 @@ render :: proc(world: ^HittableList) {
         }
 
         os.write_entire_file("output/image.bmp", img_buf.buf[:])
+
+        fmt.eprintln("Done.")
 }
 
 get_ray :: proc(i, j: int) -> Ray {
@@ -147,13 +151,13 @@ defocus_disk_sample :: proc() -> Point3 {
         return center + p.x*defocus_disk_u + p.y*defocus_disk_v
 }
 
-ray_color :: proc(r: Ray, depth: int, world: ^HittableList) -> Color {
+ray_color :: proc(r: Ray, depth: int, world: ^List) -> Color {
         if depth <= 0 do return {0,0,0}
 
         r := r
         rec: HitRecord
 
-        if hit_list(world, r, {0.001, INFINITY}, &rec) {
+        if list_hit(world, r, {0.001, INFINITY}, &rec) {
                 scattered: Ray
                 attenuation: Color
 
