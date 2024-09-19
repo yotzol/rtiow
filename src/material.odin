@@ -7,7 +7,7 @@ Material :: union {
         Dielectric,
 }
 
-Lambertian :: struct { albedo: Color }
+Lambertian :: struct { tex: ^Texture }
 Metal      :: struct { albedo: Color, fuzz: f64 }
 Dielectric :: struct { refraction_index: f64 }
 
@@ -20,7 +20,7 @@ scatter :: proc(m: ^Material, r_in, scattered: ^Ray, rec: ^HitRecord, attenuatio
                 if near_zero(scatter_dir) do scatter_dir = rec.normal
 
                 scattered^   = {rec.p, scatter_dir, r_in.tm}
-                attenuation^ = m.albedo
+                attenuation^ = texture_value(m.tex, rec.u, rec.v, rec.p)
                 return true
         case Metal:
                 m := m.(Metal)

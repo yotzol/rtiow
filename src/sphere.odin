@@ -76,5 +76,15 @@ sphere_hit :: proc(s: ^Hittable, r: Ray, ray_t: Interval, rec: ^HitRecord) -> bo
         outward_normal := (rec.p - center) / s.radius
 
         set_face_normal(rec, r, outward_normal)
+        sphere_get_uv(s, outward_normal, &rec.u, &rec.v)
+
         return true
+}
+
+sphere_get_uv :: proc(sphere: Sphere, p: Point3, u, v: ^f64) {
+        theta := acos(-p.y)
+        phi   := atan2(-p.z, p.x) + PI
+
+        u^ = phi / TAU
+        v^ = theta / PI
 }
